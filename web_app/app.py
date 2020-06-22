@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from pickle import load
 # from model.model import *
-# from web_app.get_info import kush_info
+from web_app.get_kush import kush_info
 
 
 def app():
@@ -45,6 +45,10 @@ def app():
     @app.errorhandler(404)
     def page_not_found(error):
         return 'GET OFF MY LAWN!!! Acutally this page does not exist.'
+
+    @app.errorhandler(400)
+    def Bad_Request(error):
+        return 'I am working on it!!! Give me a break!'
 
     def preds(user_info):
          """Retrives prediction from users info
