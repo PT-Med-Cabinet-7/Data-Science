@@ -26,11 +26,11 @@ def app():
         """Takes user input and predicts recommended strain
 
         User Arguments:
-            user_input {str}-- [effect, flavor and user_input to model]
+            user_input {str}
                 (defaults: {None})
 
         Returns:
-            [ARRAY]--Returns a recomended strain (with a strength score? Maybe??(TODO))
+            [ARRAY]--Returns a recomended strain 
             [EXAMPLE]--[{strain_id}, "score": 72}]
 
         """

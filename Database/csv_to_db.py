@@ -16,7 +16,7 @@ Needed columns (added extra columns tweakeing this week with model)
 
 needed_columns = ['Strain', 'Type', 'Rating', 'Effects', 'Flavor', 'Description']
 
-df_pre = pd.read_csv('https://raw.githubusercontent.com/PT-Med-Cabinet-7/Data-Science/master/Data%20Wrangling/processed_csv/effects.csv')
+df_pre = pd.read_csv('https://raw.githubusercontent.com/PT-Med-Cabinet-7/Data-Science/master/Data%20Wrangling/raw_csv/cannabis.csv')
 
 df = pd.DataFrame()
 
