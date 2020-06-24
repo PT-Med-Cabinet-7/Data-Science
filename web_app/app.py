@@ -1,39 +1,57 @@
 from flask import Flask, request, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from decouple import config
-from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
 from pickle import load
-# from model import model
-# from strain info import strain info
+# from model.model import *
+from web_app.get_kush import kush_info
 
-load_dotenv()
 
-'''Configuration of app'''
-def create_app():
-    app = FLask(__name__)
-    # app.config['SQLALCHEMY_DATABASE_URI']  = config('SQLALCHEMY_URI')
-    # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+def app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = config('SQLALCHEMY_URI')]
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
-'''Initaialise Database'''
-db = SQLAlchemy(app)
+    db = SQLAlchemy(app)
 
-'''temp data (TODO)'''
+    @app.route("/")
+    def home():
+        """Base Page, not to be used
+        Returns:
+        string --Link to project home.
+        """
+        return render_template('home.html')
 
-'''temp model (TODO)'''
+    @app.route("/request/", methods=['GET', 'POST'])
+    def search (user_input=None):
+        """Takes user input and predicts recommended strain
+        User Arguments:
+            user_input {str}
+                (defaults: {None})
+        Returns:
+            [ARRAY]--Returns a recomended strain 
+            [EXAMPLE]--[{strain_id}]
+        """
+        user_input = request.args['search']
+        decode = decode(user_input)
+        results = preds(decode) ## NEED INFO FROM Adi 
+        indices = results[0]
+        distance = results[1]
+        kush_list = kush_info(distances, indices)
+        return jsonify(kush_list)
 
-'''Home page'''
-@app.route("/")
-def home:
-    '''Root Page'''
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return 'GET OFF MY LAWN!!! Acutally this page does not exist.'
 
-    Returns:
-        #TODO
-    
-    return render_template('home.html')
+    def preds(user_info):
+         """Retrives prediction from users info
+         Arguments:
+            user_info {str} -- Returns a recomended strain)
+        Retruns:
+            Prediction
+        """
+        # model = Predictor()
+        # pred_distances, pred_indices = model.predict(user_input=user_info)
+        # return [pred_indices, pred_distances]
 
-@app.route("/request/", methods = ['GET', 'POST'])
-def search(user_input=None):
-    '''Input from user and gives something back (TODO)'''
 
-return app
+    return app
