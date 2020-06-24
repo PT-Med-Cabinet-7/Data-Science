@@ -11,8 +11,6 @@ def kush_info(id_list, distance_list):
     conn = sqlite3.connect('med_cabinet3.sqlite3')
     curs = conn.cursor()
 
-    return_list = []
-
     needed_columns = ['Strain', 'Type', 'Rating', 'Effects', 'Flavor', 'Description']
 
     # scale distance to a score from 1 to 3
