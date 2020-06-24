@@ -5,7 +5,7 @@ from web_app.home import home_route
 from web_app.recommend import recommend_route
 
 
-DATABASE_URI = ('sqlite:///med_cabinet.db')
+DATABASE_URI = ('sqlite:///med_cabinet.sqlite3')
 
 
 def create_app():
