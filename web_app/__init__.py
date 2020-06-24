@@ -1,10 +1,10 @@
 from flask import Flask, Blueprint
 
-from web_app.home_route import home_route
-from web_app.recommender import recommend_route
+from web_app.home import home_route
+from web_app.recommend import recommend_route
 
 
-DATABASE_URI = ('sqlite:///Cannabis.db')
+DATABASE_URI = ('sqlite:///med_cabinet.sqlite3')
 
 
 def create_app():

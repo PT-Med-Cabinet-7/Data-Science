@@ -1,48 +1,70 @@
-"""to retrieve data from the database"""
-import sqlite3
-import numpy as np
+import os
+import requests
+from flask import Flask, request, jsonify, Blueprint
 
-def kush_info(id_list, distance_list):
-    """takes in the list of two arrays returned from the model
-    and returns all the information about the strains
-    in a json format"""
+import pickle
+import sklearn
+import pandas
 
-    #connecting to the database
-    conn = sqlite3.connect('med_cabinet3.sqlite3')
-    curs = conn.cursor()
+recommend_route = Blueprint('recommend_route',__name__)
 
-    needed_columns = ['Strain', 'Type', 'Rating', 'Effects', 'Flavor', 'Description']
+@recommend_route.route('/predict', methods=['GET','POST'])
 
-    # scale distance to a score from 1 to 3
-    distances = []
-    for i in range(0, 5):
-        distances.append(distance_list[i])
-    distances = np.asarray(distances)
 
-    scaler = MinMaxScaler(feature_range=(1, 3))
+def predict():
+    '''
+    Returns a JSON object of the recommended strain information 
+    calculated from a users flavor and effect. 
+    '''
     
-    scaled = scaler.fit_transform(distances.reshape(-1, 1))
-    scaled = scaled.round()
-    scores = scaled.reshape(1,-1)
-    for i in range(0, 5):
-        kush_list = {}
-        kush_list['Recommendation'] = i + 1
-        for item in needed_columns:
-            request = f'SELECT {item} FROM strain_info WHERE id = {int(id_list[i])};'
-            value = str(curs.execute(request).fetchall())
-            #For some reason the SQL query returns something 
-            # formatted like (['<strain-name>,]) so this is 
-            # to remove all the useless characters
-            value = value.replace(')', '')
-            value = value.replace('[', '')
-            value = value.replace(']', '')
-            value = value.replace('(', '')
-            value = value.replace(',', '')
-            value = value.replace("'", '')
-            value = value.replace('\ ', '')
-            value = value.replace('"', '')
-            kush_list[item] = value
-        kush_list['Score'] = scores[0][i]
-        return_list.append(kush_list)
-    curs.close()
-    return return_list
+    # Load Model
+    KNN_FILEPATH = 'web_app/data/knn_rd.pkl'
+    print("LOADING THE MODEL...")
+    with open(KNN_FILEPATH, "rb") as model_file:
+        saved_model = pickle.load(model_file)
+    
+    # Load Effects
+    EFFECTS_FILEPATH = 'web_app/data/effects.pkl'
+    print("LOADING EFFECTS..")
+    with open(EFFECTS_FILEPATH, "rb") as effect_file:
+        effects = pickle.load(effect_file)
+    
+    # Load Flavors
+    FLAVOR_FILEPATH = 'web_app/data/flavors.pkl'
+    print("LOADING FLAVORS...")
+    with open(FLAVOR_FILEPATH, "rb") as flavors_file:
+        flavors = pickle.load(flavors_file)
+    
+    from_web = dict(request.args) or dict(request.json)
+    web_query = list(from_web.values())
+    effect = effects[web_query[0]]
+    flavor = flavors[web_query[1]]
+
+    
+    # Generate Recommendation
+    print("RECOMMENDING...")
+    
+
+    # Use info to get vectors from pickled dictionaries
+    effect = effects[web_query[0]]
+    flavor = flavors[web_query[1]]
+
+    # Generate query vector by adding these vectors
+    query = effect + flavor
+
+    # Run knn model 
+    result = saved_model.kneighbors(query.reshape(1,-1))
+    DF_FILEPATH = 'data_wrangling/raw_csv/cannabis.csv'
+    df = pandas.read_csv(DF_FILEPATH)
+
+    # Result object will have the index location of recomendations to lookup in df
+    strains = df.iloc[result[1][0]]['Strain'].to_list() 
+    recommendation_dictionaries = []
+    for i in range(2):
+        rec = df[df['Strain']== strains[i]].reset_index()
+        rec.columns =  ['id', 'strain', 'type','rating', 'effect', 'flavor', 'description']
+        dictionary = rec.to_dict()
+        recommendation_dictionaries.append(dictionary)
+        
+        
+    return jsonify(recommendation_dictionaries ) 
